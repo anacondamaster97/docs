@@ -1,97 +1,23 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: Introduction
+description: 'Welcome to the Scheduler MVP Documentation'
 ---
 
-## Setting up
+# Scheduler MVP
 
-Get your documentation site up and running in minutes.
+Welcome to the documentation for the Scheduler MVP. This system is designed to manage caregivers, clients, and the complex scheduling logic required to match them effectively.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## Key Concepts
 
-## Make it yours
+The system is built around a few core concepts:
 
-Design a docs site that looks great and empowers your users.
+- **Caregivers & Clients**: The primary entities in the system.
+- **Availability & Care Patterns**: Recurring rules that define when a caregiver works and when a client needs care.
+- **Exceptions**: Specific overrides to patterns (e.g., vacations, cancellations).
+- **The Baker**: A background process that expands patterns into concrete "Billable Items" (Care Requests).
+- **The Matchmaker**: An algorithm that assigns caregivers to open requests based on skills, location, and preferences.
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+## Navigation
 
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+- **Guides**: Detailed explanations of the database schema and dashboard.
+- **API Reference**: Documentation for the backend services and endpoints.

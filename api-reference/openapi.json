@@ -1,94 +1,142 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
+    "title": "Scheduler MVP API",
+    "description": "API for the Scheduler MVP system, managing caregivers, clients, and scheduling.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
+      "url": "https://api.example.com"
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+    "/api/availability/tools/add": {
+      "post": {
+        "summary": "Add Availability Pattern",
+        "description": "Adds a new recurring availability pattern for a caregiver.",
+        "operationId": "addAvailabilityPattern",
+        "tags": [
+          "Availability"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "caregiver_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": [
+                      "WEEKLY"
+                    ]
+                  },
+                  "days": {
+                    "type": "string",
+                    "example": "MO,WE"
+                  },
+                  "local_start_time": {
+                    "type": "string",
+                    "format": "time",
+                    "example": "09:00:00"
+                  },
+                  "local_end_time": {
+                    "type": "string",
+                    "format": "time",
+                    "example": "17:00:00"
+                  }
+                },
+                "required": [
+                  "caregiver_id",
+                  "frequency",
+                  "days",
+                  "local_start_time",
+                  "local_end_time"
+                ]
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
         }
-      },
+      }
+    },
+    "/api/availability/tools/create-exception": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "summary": "Create Availability Exception",
+        "description": "Adds a 'Time Off' exception for a caregiver.",
+        "operationId": "createAvailabilityException",
+        "tags": [
+          "Availability"
+        ],
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "object",
+                "properties": {
+                  "caregiver_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "start_dt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_dt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "is_available": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "caregiver_id",
+                  "start_dt",
+                  "end_dt",
+                  "is_available"
+                ]
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -96,121 +144,652 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/api/availability/initiate-collection": {
+      "post": {
+        "summary": "Initiate Availability Collection",
+        "description": "Triggers an outbound call to a caregiver to ask for their schedule.",
+        "operationId": "initiateAvailabilityCollection",
+        "tags": [
+          "Availability"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "caregiver_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "vapi"
+                    ]
+                  }
+                },
+                "required": [
+                  "caregiver_id",
+                  "method"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client-care-request/initiate-collection": {
+      "post": {
+        "summary": "Initiate Care Request Collection",
+        "description": "Triggers an outbound call to a client to ask for their care needs.",
+        "operationId": "initiateCareRequestCollection",
+        "tags": [
+          "Care Request"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "vapi"
+                    ]
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "method"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client-care-request/tools/create-pattern": {
+      "post": {
+        "summary": "Create Care Pattern",
+        "description": "Creates a new recurring care pattern for a client.",
+        "operationId": "createCarePattern",
+        "tags": [
+          "Care Request"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": [
+                      "WEEKLY"
+                    ]
+                  },
+                  "days": {
+                    "type": "string",
+                    "example": "FR"
+                  },
+                  "local_start_time": {
+                    "type": "string",
+                    "format": "time",
+                    "example": "09:00:00"
+                  },
+                  "local_end_time": {
+                    "type": "string",
+                    "format": "time",
+                    "example": "17:00:00"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "frequency",
+                  "days",
+                  "local_start_time",
+                  "local_end_time"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/client-care-request/tools/create-exception": {
+      "post": {
+        "summary": "Create Care Exception",
+        "description": "Cancels care for a specific date.",
+        "operationId": "createCareException",
+        "tags": [
+          "Care Request"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "start_dt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_dt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "full_cancellation",
+                      "modification"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "start_dt",
+                  "end_dt",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scheduling/generate-care-requests": {
+      "get": {
+        "summary": "Generate Care Requests",
+        "description": "Expands abstract patterns into concrete billable items.",
+        "operationId": "generateCareRequests",
+        "tags": [
+          "Scheduling"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scheduling/generate-shift-assignments": {
+      "get": {
+        "summary": "Generate Shift Assignments",
+        "description": "Runs the scoring algorithm to assign caregivers to open requests.",
+        "operationId": "generateShiftAssignments",
+        "tags": [
+          "Scheduling"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dispatch/initiate-assignment-confirmation-call": {
+      "post": {
+        "summary": "Initiate Confirmation Call",
+        "description": "Finds assignments waiting for confirmation and calls caregivers.",
+        "operationId": "initiateConfirmationCall",
+        "tags": [
+          "Dispatch"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "caregiver_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "vapi"
+                    ]
+                  }
+                },
+                "required": [
+                  "caregiver_id",
+                  "method"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dispatch/tools/respond-shift-assignment": {
+      "post": {
+        "summary": "Respond to Shift Assignment",
+        "description": "Webhook for caregiver response (accept/decline).",
+        "operationId": "respondShiftAssignment",
+        "tags": [
+          "Dispatch"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "shift_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "response": {
+                    "type": "string",
+                    "enum": [
+                      "accept",
+                      "decline"
+                    ]
+                  }
+                },
+                "required": [
+                  "shift_id",
+                  "response"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{id}": {
+      "get": {
+        "summary": "Get Client Details",
+        "description": "Fetches comprehensive client details.",
+        "operationId": "getClientDetails",
+        "tags": [
+          "Client"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ID of plant to delete",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "properties": {
+                    "client": {
+                      "type": "object"
+                    },
+                    "careRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "carePatterns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "careExceptions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "shiftAssignments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "preferredCaregivers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "blacklistedCaregivers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "stats": {
+                      "type": "object"
+                    }
+                  }
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+    },
+    "/api/chat-search": {
       "post": {
-        "description": "Information about a new plant added to the store",
+        "summary": "Chat Search",
+        "description": "Handles conversational AI requests using Groq API with streaming responses.",
+        "operationId": "chatSearch",
+        "tags": [
+          "Chat Search"
+        ],
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "object",
+                "properties": {
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "context": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "messages"
+                ]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+            "description": "Server-Sent Events Stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
           }
         }
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "/api/chat-search/context": {
+      "get": {
+        "summary": "Get Chat Context",
+        "description": "Fetches and formats all scheduling data as context for the AI chat.",
+        "operationId": "getChatContext",
+        "tags": [
+          "Chat Search"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "context": {
+                      "type": "string"
+                    },
+                    "raw": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat-search/schedule": {
+      "get": {
+        "summary": "Get Schedule",
+        "description": "Fetches detailed schedule data for a specific caregiver or client.",
+        "operationId": "getSchedule",
+        "tags": [
+          "Chat Search"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "caregiver",
+                "client"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "entity": {
+                      "type": "object"
+                    },
+                    "patterns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "exceptions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "availabilitySlots": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "careRequests": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "shiftAssignments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
