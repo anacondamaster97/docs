@@ -65,6 +65,7 @@
           {
             "group": "Scheduler API",
             "pages": [
+              "api-reference/chat-search",
               "api-reference/availability",
               "api-reference/care-request",
               "api-reference/scheduling",
@@ -124,15 +125,15 @@
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {

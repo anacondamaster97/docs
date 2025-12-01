@@ -1,0 +1,129 @@
+---
+title: 'Chat Search API'
+description: 'AI-powered conversational interface endpoints.'
+---
+
+## Endpoints
+
+### Main Chat Endpoint
+`POST /api/chat-search`
+
+Handles conversational AI requests using Groq API with streaming responses and tool calling support.
+
+**Logic:**
+- Receives messages array and scheduling context from frontend
+- Builds system prompt with full scheduling data context
+- Makes streaming request to Groq API (`openai/gpt-oss-20b` model)
+- Parses SSE stream and forwards processed events to client
+- Handles tool call accumulation across multiple stream chunks
+
+**System Prompt Capabilities:**
+- Answer questions about caregiver availability patterns and exceptions
+- Answer questions about client care patterns and exceptions
+- Identify scheduling conflicts or gaps
+- Provide information about upcoming shifts and assignments
+- Trigger schedule viewing tools and call initiation
+
+**Available Tools:**
+1. `get_caregiver_schedule` - Fetch detailed caregiver schedule for modal display
+2. `get_client_schedule` - Fetch detailed client schedule for modal display  
+3. `initiate_caregiver_call` - Prepare call parameters for availability verification
+
+**Request Body:**
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Who is available this weekend?" }
+  ],
+  "context": "...scheduling data context string..."
+}
+```
+
+**Response:**
+Server-Sent Events stream with:
+- `{ type: 'content', content: '...' }` - Text content chunks
+- `{ type: 'tool_call_start', index, name }` - Tool call initiated
+- `{ type: 'tool_call_progress', index, name, arguments_partial }` - Tool call building
+- `{ type: 'tool_calls', tool_calls: [...] }` - Final tool calls with parsed arguments
+- `data: [DONE]` - Stream complete
+
+### Context Endpoint
+`GET /api/chat-search/context`
+
+Fetches and formats all scheduling data as context for the AI chat.
+
+**Logic:**
+- Fetches from Supabase: caregivers, availability_patterns, availability_exceptions, clients, care_patterns, care_exceptions, care_requests, shift_assignments
+- Formats data into structured markdown with data model explanations
+- Highlights unfilled care requests that need attention
+- Groups shift assignments by status (confirmed, accepted, assigned, completed)
+- Returns both formatted context string and raw data
+
+**Returns:**
+```json
+{
+  "context": "# ELDERCARE SCHEDULING SYSTEM DATA\n...",
+  "raw": {
+    "caregivers": [...],
+    "availabilityPatterns": [...],
+    "clients": [...],
+    "careRequests": [...],
+    "shiftAssignments": [...]
+  }
+}
+```
+
+### Schedule Endpoint
+`GET /api/chat-search/schedule`
+
+Fetches detailed schedule data for a specific caregiver or client (used by schedule modal).
+
+**Query Parameters:**
+- `type`: `'caregiver'` or `'client'`
+- `id`: UUID of the entity
+
+**Logic:**
+- For caregivers: Fetches caregiver details, availability_patterns, availability_exceptions, availability_slots, and shift_assignments (with client names)
+- For clients: Fetches client details, care_patterns, care_exceptions, care_requests, and shift_assignments (with caregiver names)
+- Date range: Current date + 28 days (4 weeks)
+- Filters shift assignments to active statuses: 'assigned', 'accepted', 'confirmed'
+
+**Returns (Caregiver):**
+```json
+{
+  "type": "caregiver",
+  "entity": { 
+    "id": "uuid", 
+    "first_name": "Jane", 
+    "last_name": "Doe", 
+    "phone_number": "+15551234567", 
+    "status": "active", 
+    "skills": ["dementia", "driving"], 
+    "timezone": "America/Los_Angeles" 
+  },
+  "patterns": [...],
+  "exceptions": [...],
+  "availabilitySlots": [...],
+  "shiftAssignments": [{ "id": "uuid", "start_dt": "...", "end_dt": "...", "client_name": "John Smith" }]
+}
+```
+
+**Returns (Client):**
+```json
+{
+  "type": "client",
+  "entity": { 
+    "id": "uuid", 
+    "first_name": "John", 
+    "last_name": "Smith", 
+    "phone_number": "+15559876543", 
+    "status": "active", 
+    "required_skills": ["dementia"], 
+    "timezone": "America/Los_Angeles" 
+  },
+  "patterns": [...],
+  "exceptions": [...],
+  "careRequests": [...],
+  "shiftAssignments": [{ "id": "uuid", "start_dt": "...", "end_dt": "...", "caregiver_name": "Jane Doe" }]
+}
+```

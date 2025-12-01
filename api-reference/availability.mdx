@@ -15,7 +15,7 @@ Adds a new recurring availability pattern for a caregiver. Used by Vapi when a c
 **Expects (JSON):**
 ```json
 {
-  "caregiver_id": "uuid-of-caregiver",
+  "caregiver_id": "550e8400-e29b-41d4-a716-446655440000",
   "frequency": "WEEKLY",
   "days": "MO,WE",
   "local_start_time": "09:00:00",
@@ -38,7 +38,7 @@ Adds a "Time Off" exception (subtractive) for a caregiver. Used by Vapi when a c
 **Expects (JSON):**
 ```json
 {
-  "caregiver_id": "uuid-of-caregiver",
+  "caregiver_id": "550e8400-e29b-41d4-a716-446655440000",
   "start_dt": "2023-12-01T09:00:00Z",
   "end_dt": "2023-12-07T17:00:00Z",
   "is_available": false,
@@ -61,7 +61,7 @@ Manually triggers an outbound call to a specific caregiver to ask for their sche
 **Expects (JSON):**
 ```json
 {
-  "caregiver_id": "uuid-of-caregiver",
+  "caregiver_id": "550e8400-e29b-41d4-a716-446655440000",
   "method": "vapi"
 }
 ```

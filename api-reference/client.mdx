@@ -25,44 +25,72 @@ Fetches comprehensive client details including all related data (care requests, 
 ```json
 {
   "client": {
-    "id": "uuid",
-    "first_name": "string",
-    "last_name": "string",
-    "status": "active|inactive|suspended",
-    "gender": "string|null",
-    "age": "number|null",
-    "phone_number": "string|null",
-    "timezone": "string",
-    "personal_tags": ["string"],
-    "caregiver_dealbreaker_tags": ["string"],
-    "required_skills": ["string"],
-    "preferred_caregivers": ["uuid"],
-    "blacklisted_caregivers": ["uuid"],
-    "created_at": "timestamp",
-    "updated_at": "timestamp"
+    "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "first_name": "John",
+    "last_name": "Smith",
+    "status": "active",
+    "gender": "male",
+    "age": 82,
+    "phone_number": "+15559876543",
+    "timezone": "America/Los_Angeles",
+    "personal_tags": ["quiet_home", "large_dog"],
+    "caregiver_dealbreaker_tags": ["smoker"],
+    "required_skills": ["dementia", "lifting"],
+    "preferred_caregivers": ["550e8400-e29b-41d4-a716-446655440000"],
+    "blacklisted_caregivers": [],
+    "created_at": "2023-01-15T08:00:00Z",
+    "updated_at": "2023-11-20T10:30:00Z"
   },
-  "careRequests": [...],
-  "carePatterns": [...],
-  "careExceptions": [...],
-  "shiftAssignments": [...],
-  "preferredCaregivers": [...],
-  "blacklistedCaregivers": [...],
+  "careRequests": [
+    {
+      "id": "b2345678-1234-1234-1234-123456789012",
+      "start_dt": "2023-12-01T09:00:00Z",
+      "end_dt": "2023-12-01T17:00:00Z",
+      "status": "filled"
+    }
+  ],
+  "carePatterns": [
+    {
+      "id": "c3456789-2345-2345-2345-234567890123",
+      "rrule_string": "FREQ=WEEKLY;BYDAY=MO,WE,FR",
+      "local_start_time": "09:00:00",
+      "local_end_time": "17:00:00"
+    }
+  ],
+  "careExceptions": [],
+  "shiftAssignments": [
+    {
+      "id": "d4567890-3456-3456-3456-345678901234",
+      "caregiver_id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "assigned",
+      "start_dt": "2023-12-01T09:00:00Z",
+      "end_dt": "2023-12-01T17:00:00Z"
+    }
+  ],
+  "preferredCaregivers": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "first_name": "Jane",
+      "last_name": "Doe"
+    }
+  ],
+  "blacklistedCaregivers": [],
   "stats": {
-    "totalCareRequests": "number",
-    "openRequests": "number",
-    "filledRequests": "number",
-    "partialRequests": "number",
-    "unfilledRequests": "number",
-    "completedRequests": "number",
-    "cancelledRequests": "number",
-    "totalShifts": "number",
-    "acceptedShifts": "number",
-    "rejectedShifts": "number",
-    "assignedShifts": "number",
-    "completedShifts": "number",
-    "cancelledShifts": "number",
-    "activeCarePatterns": "number",
-    "totalCarePatterns": "number"
+    "totalCareRequests": 150,
+    "openRequests": 2,
+    "filledRequests": 145,
+    "partialRequests": 0,
+    "unfilledRequests": 1,
+    "completedRequests": 140,
+    "cancelledRequests": 2,
+    "totalShifts": 145,
+    "acceptedShifts": 140,
+    "rejectedShifts": 2,
+    "assignedShifts": 3,
+    "completedShifts": 135,
+    "cancelledShifts": 2,
+    "activeCarePatterns": 1,
+    "totalCarePatterns": 2
   }
 }
 ```

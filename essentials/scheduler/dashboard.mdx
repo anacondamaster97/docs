@@ -29,13 +29,89 @@ description: 'Overview of the Agency Dashboard and its pages'
 **Styling:** Uses consistent design system with CSS variables (`bg-background`, `text-foreground`, `bg-card`, etc.), color-coded status badges, responsive grid layouts, and loading/error states.
 
 ## 3. Chat Page (`/agency/chat`)
-**Description:** AI-powered chat interface for agency staff to interact with scheduling data.
+**Description:** AI-powered conversational interface for agency staff to query and manage scheduling data using natural language.
+**Features:**
+- **Welcome Screen:** Example prompts for common queries ("Who is available this weekend?", "Show me a caregiver's schedule", etc.)
+- **Real-time Streaming:** Uses SSE (Server-Sent Events) to stream AI responses with typewriter effect
+- **Context Loading:** Fetches full scheduling context (caregivers, clients, patterns, exceptions, assignments) on mount
+- **Tool Calls Integration:** 
+  - `get_caregiver_schedule`: Opens modal showing caregiver's availability patterns, exceptions, and shifts
+  - `get_client_schedule`: Opens modal showing client's care patterns, exceptions, and assignments
+  - `initiate_caregiver_call`: Renders a "Call" button to initiate phone calls for availability checks
+- **Thinking Steps UI:** Shows collapsible tool call progress similar to ChatGPT (thinking → complete)
+- **Schedule Modal:** Displays detailed schedule view with patterns (parsed RRULE), exceptions, and upcoming shifts
+- **Markdown Rendering:** Full markdown support with tables, lists, code blocks, and styled headers
 
-## 4. Caregivers Calendar (`/agency/caregivers-calendar`)
+**Components:**
+- `WelcomeScreen`: Initial state with example prompts
+- `MessageBubble`: Renders user/assistant messages with markdown
+- `ThinkingSteps`: Collapsible tool call progress indicator
+- `CaregiverCallButton`: Green call button for initiating calls
+- `ScheduleView`: Modal content for displaying entity schedules
+
+## 4. Caregivers List Page (`/agency/caregivers`)
+**Description:** Searchable list view of all caregivers with summary cards.
+**Features:**
+- Search bar with real-time filtering
+- Caregiver cards showing: name, hourly rate, specialties (tags), ideal client match
+- Personality traits and match suggestions (ThumbsUp, Lightbulb icons)
+- Hobby avatars with tooltips
+- Click-through to caregiver detail page
+- Load more pagination
+
+## 5. Caregiver Detail Page (`/agency/caregivers/[id]`)
+**Description:** Comprehensive caregiver profile page with all personal and professional information.
+**Features:**
+- **Header:** Profile avatar (initials), name, hourly rate, email link, schedule link
+- **About Me Card:** Caregiver's personal description
+- **Specialties Card:** Skills and certifications as badges
+- **Hobbies & Interests Card:** Personal interests as badges
+- **Ideal Client Card:** Description of preferred client type
+- **Incoming Matches Section:** Good fit descriptions and suggestions
+- **Referrals Section:** Potential client match suggestions
+
+## 6. Clients List Page (`/agency/clients`)
+**Description:** Searchable list view of all clients with summary cards.
+**Features:**
+- Search bar filtering by name, hobbies, and match descriptions
+- Incomplete profiles warning banner (yellow)
+- Client cards showing: name, care needs, hobbies
+- Match information (good fit, shared interests, offers)
+- Email and calendar quick action links
+- Click-through to client detail page
+- Load more pagination
+
+## 7. Calendar Page (`/agency/calendar`)
+**Description:** Unified calendar view showing all scheduling events with week navigation.
+**Features:**
+- **Tab Navigation:** Switch between "Week View" and "Requests" tabs
+- **Week View:** 
+  - 7-day week grid layout with navigation arrows
+  - Events displayed as colored cards (color-coded by person)
+  - Shows caregiver→client assignments with times
+  - Click events to view details in modal
+- **Requests Tab:** List of pending calendar requests with status
+- **Event Detail Modal:** Shows full event information (caregiver, client, times, description, status)
+- Person color coding for visual differentiation
+
+## 8. Search Page (`/agency/search`)
+**Description:** AI-powered caregiver search with natural language queries.
+**Features:**
+- Natural language search input (e.g., "Caregiver who can help with dementia on weekends")
+- Filter options: ZIP code, minimum experience
+- **Search Analysis:** Shows detected criteria (specialties, days, time preference, urgency, keywords)
+- **Results Cards:** Display caregiver details including:
+  - Name, experience, location, hourly rate, rating (stars)
+  - Certifications and specialties as badges
+  - Weekly availability display
+  - Relevance score and match reason
+  - Potential client matches with schedule compatibility
+
+## 9. Caregivers Calendar (`/agency/caregivers-calendar`)
 **Description:** Calendar view of caregiver schedules and availability.
 
-## 5. Clients Calendar (`/agency/clients-calendar`)
+## 10. Clients Calendar (`/agency/clients-calendar`)
 **Description:** Calendar view of client care schedules and requests.
 
-## 6. Scheduling (`/agency/scheduling`)
+## 11. Scheduling (`/agency/scheduling`)
 **Description:** Scheduling management interface for shift assignments.
