@@ -1,0 +1,46 @@
+---
+title: 'Dispatch Service'
+description: 'Handles the confirmation loop with caregivers.'
+---
+
+## Endpoints
+
+### Initiate Assignment Confirmation Call
+`POST /api/dispatch/initiate-assignment-confirmation-call`
+
+"The Town Crier." Finds all assignments waiting for confirmation and calls the caregivers.
+
+**Logic:** Queries `shift_assignments` where `status = 'assigned'`, calls Vapi API, and injects shift details into the prompt context.
+
+**Expects (JSON):**
+```json
+{
+  "caregiver_id": "uuid-of-caregiver",
+  "method": "vapi"
+}
+```
+
+**Returns:**
+```json
+{ "status": "dispatched" }
+```
+
+### Respond to Shift Assignment
+`POST /api/dispatch/tools/respond-shift-assignment`
+
+The Webhook for the Caregiver's response. Used by Vapi when the caregiver says "I accept" or "I decline."
+
+**Logic:** Updates `shift_assignments` status to either `accepted` or `rejected`.
+
+**Expects (JSON):**
+```json
+{
+  "shift_id": "uuid-of-shift",
+  "response": "accept" 
+}
+```
+
+**Returns:**
+```json
+{ "result": "accepted" }
+```

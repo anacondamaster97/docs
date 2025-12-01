@@ -1,0 +1,41 @@
+---
+title: 'Agency Dashboard Pages'
+description: 'Overview of the Agency Dashboard and its pages'
+---
+
+## 1. Agency Home (`/agency`)
+**Description:** Main dashboard showing agency overview with statistics, maps, charts, and lists of caregivers/clients.
+**Features:**
+- Stats cards (active caregivers, clients, shifts, requests)
+- Interactive map with caregiver and client locations
+- Pie chart for shift assignment status
+- Bar chart for care request status
+- Searchable caregiver and client lists
+
+## 2. Client Detail Page (`/agency/clients/[id]`)
+**Description:** Comprehensive client profile page showing all client data and related information.
+**Features:**
+- **Header:** Client name, status badge, phone, age, gender, timezone
+- **Stats Cards:** Care requests count, filled requests, total shifts, active patterns
+- **Client Details Card:** Personal tags, required skills, dealbreaker tags, timestamps
+- **Preferred Caregivers Table:** Full table with name, status, phone, age/gender, skills
+- **Blacklisted Caregivers Table:** Similar table (conditional display)
+- **Tabbed Content:**
+  - *Shift Assignments:* Cards with caregiver info, time, match score
+  - *Care Requests:* Table with date, time, caregivers needed, status
+  - *Care Patterns:* Recurring schedule patterns with parsed RRULE display
+  - *Exceptions:* Care exceptions with type and reason
+
+**Styling:** Uses consistent design system with CSS variables (`bg-background`, `text-foreground`, `bg-card`, etc.), color-coded status badges, responsive grid layouts, and loading/error states.
+
+## 3. Chat Page (`/agency/chat`)
+**Description:** AI-powered chat interface for agency staff to interact with scheduling data.
+
+## 4. Caregivers Calendar (`/agency/caregivers-calendar`)
+**Description:** Calendar view of caregiver schedules and availability.
+
+## 5. Clients Calendar (`/agency/clients-calendar`)
+**Description:** Calendar view of client care schedules and requests.
+
+## 6. Scheduling (`/agency/scheduling`)
+**Description:** Scheduling management interface for shift assignments.

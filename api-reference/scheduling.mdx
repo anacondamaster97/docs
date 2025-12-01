@@ -1,0 +1,34 @@
+---
+title: 'Scheduling Service'
+description: 'Handles the generation of concrete shifts and the matching algorithm.'
+---
+
+## Endpoints
+
+### Generate Care Requests (The Baker)
+`GET /api/scheduling/generate-care-requests`
+
+Expands abstract patterns into concrete billable items (`care_requests`) for the next 14 days.
+
+**Logic:** Reads active `care_patterns`, applies `care_exceptions`, and inserts missing rows into `care_requests`.
+
+**Expects:** No payload (Triggered by Cron/Scheduler).
+
+**Returns:**
+```json
+{ "status": "ok" }
+```
+
+### Generate Shift Assignments (The Matchmaker)
+`GET /api/scheduling/generate-shift-assignments`
+
+Runs the scoring algorithm to assign caregivers to open requests.
+
+**Logic:** Finds open requests within the 14-day horizon, scores nearby candidates, and inserts `shift_assignments` with `status='assigned'`.
+
+**Expects:** No payload (Triggered by Cron/Scheduler).
+
+**Returns:**
+```json
+{ "status": "ok" }
+```

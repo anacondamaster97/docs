@@ -1,0 +1,178 @@
+---
+title: 'Database Schema Design V1'
+description: 'Scheduler MVP Database Schema'
+---
+
+## 1. Users & Profiles
+
+### Table: `caregivers`
+*Stores profile, skills, and preferences for the staff providing care.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | id of caregiver |
+| `status` | Text | 'active', 'inactive', 'suspended' |
+| `first_name` | Text | First name of caregiver |
+| `last_name` | Text | Last name of caregiver |
+| `gender` | Text | 'female', 'male', 'other' |
+| `age` | Int | Age of caregiver |
+| `phone_number` | Text | Phone number of caregiver |
+| `home_location` | GEOGRAPHY PostGIS Point | Where caregiver lives |
+| `timezone` | Text | IANA timezone identifier (e.g., 'America/Los_Angeles'). Used for converting local pattern times to UTC. |
+| `person_tags` | Text[] | Tags describing the caregiver e.g., [`'chatty'`, `'filipino'`] |
+| `client_dealbreaker_tags` | Text[] | Tags describing clients the caregiver won't work with e.g., [`'smoker'`, `'male'`] |
+| `skills` | TEXT[] | Caregiver's skills e.g., [`'dementia'`, `'lifting'`, `'driving'`] |
+| `preferred_clients` | UUID[] | List of client IDs that we prioritize assigning this caregiver to |
+| `blacklisted_clients` | UUID[] | List of client IDs that this caregiver will not work with |
+
+> **Note:** Just because someone is preferred by the client doesn't mean it is best for the business. If assigning a certain caregiver to a certain client (even if they prefer that caregiver) means that other clients are left with worse care, then we don't want to move forward with that decision.
+
+### Table: `clients`
+*Stores profile, needs, and preferences for families receiving care.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | ID of client |
+| `status` | Text | 'active', 'inactive', 'suspended' |
+| `first_name` | Text | First name of client |
+| `last_name` | Text | Last name of client |
+| `gender` | Text | 'female', 'male', 'other' |
+| `age` | Int | Age of client |
+| `phone_number` | Text | Phone number of client |
+| `home_location` | GEOGRAPHY PostGIS Point | Where client lives |
+| `timezone` | Text | IANA timezone identifier (e.g., 'America/Los_Angeles'). Used for converting local pattern times to UTC. |
+| `personal_tags` | Text[] | Traits of client e.g., [`'quiet_home'`, `'large_dog'`] |
+| `caregiver_dealbreaker_tags` | Text[] | Traits they refuse in a caregiver (e.g., [`'smoker'`]) |
+| `required_skills` | Text[] | Mandatory skills for any caregiver assigned to this client e.g., [`'dementia'`, `'lifting'`, `'driving'`] |
+| `preferred_caregivers` | UUID[] | List of caregivers that this client prefers |
+| `blacklisted_caregivers` | UUID[] | Caregivers that this client will not work with |
+
+> **Note:** Similar to the note above, just because someone is preferred by the caregiver doesn't mean it is best for the business.
+
+---
+
+## Timezone Handling
+
+The system uses a two-tier approach to handle timezones correctly:
+
+**1. Pattern Times (TIME type)**
+- `availability_patterns` and `care_patterns` store times as **TIME** (e.g., `'09:00:00'`)
+- These represent the **local time-of-day** in the user's timezone
+- Field names: `local_start_time`, `local_end_time`
+
+**2. Concrete Events (TIMESTAMPTZ type)**
+- `availability_slots`, `care_requests`, `shift_assignments`, and exceptions store times as **TIMESTAMPTZ**
+- These represent **specific moments in time** stored in UTC
+- Field names: `start_dt`, `end_dt`
+
+**3. User Timezone**
+- Both `caregivers` and `clients` tables have a `timezone` column
+- Stores IANA timezone identifiers (e.g., `'America/Los_Angeles'`, `'America/New_York'`)
+- Default: `'America/Los_Angeles'`
+
+**4. The "Baker" Process**
+When expanding patterns into concrete events, the baker:
+1. Reads the user's `timezone` from their profile
+2. Combines the pattern date with `local_start_time`/`local_end_time`
+3. Converts from the user's local timezone to UTC using `date-fns-tz`
+4. Stores the result as TIMESTAMPTZ (ensures DST transitions are handled correctly automatically).
+
+---
+
+## 2. Caregiver Availability (Supply)
+
+### Table: `availability_patterns`
+*The "General Rules" for when a caregiver works.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Availability pattern id |
+| `caregiver_id` | UUID | Links to caregiver |
+| `rrule_string` | Text | Recurrence rule (e.g., `FREQ=WEEKLY;BYDAY=MO,WE`) |
+| `local_start_time` | TIME | Start time of shift window in caregiver's local timezone (e.g., `'09:00:00'`) |
+| `local_end_time` | TIME | End time of shift window in caregiver's local timezone (e.g., `'17:00:00'`) |
+| `active` | Boolean | Allows toggling off "Mondays" without deleting the rule |
+
+> **Note:** Pattern times are stored as TIME (not TIMESTAMP) and represent the local time-of-day. When expanding patterns into concrete slots, the baker combines these with the caregiver's timezone to produce UTC timestamps.
+
+### Table: `availability_exceptions`
+*Specific overrides to the general rules.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Availability exception id |
+| `caregiver_id` | UUID | Links to caregiver |
+| `start_dt` | Timestamp | Specific start date/time |
+| `end_dt` | Timestamp | Specific end date/time |
+| `is_available` | Boolean | **TRUE:** additive (able to pick up an extra shift)<br/>**FALSE:** subtractive (Time off/sick, etc.) |
+| `reason` | Text | e.g., "Vacation", "Doctor Appointment" |
+
+---
+
+## 3. Family Care Requests (Demand)
+
+### Table: `care_patterns`
+*The "General Rules" for when a client needs care.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Care pattern id |
+| `client_id` | UUID | Links to client |
+| `rrule_string` | Text | Recurrence rule (e.g., `FREQ=WEEKLY;BYDAY=MO,WE`) |
+| `local_start_time` | TIME | Start time of care in client's local timezone (e.g., `'09:00:00'`) |
+| `local_end_time` | TIME | End time of care in client's local timezone (e.g., `'17:00:00'`) |
+| `num_caregivers` | Int | Number of caregivers requested for care (DEFAULT 1, MVP is 1) |
+| `active` | Boolean | Allows toggling off "Mondays" without deleting the rule |
+
+> **Note:** Pattern times are stored as TIME (not TIMESTAMP) and represent the local time-of-day. When expanding patterns into concrete care_requests, the baker combines these with the client's timezone to produce UTC timestamps.
+
+### Table: `care_exceptions`
+*Specific dates to SKIP generation (Cancellations).*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Care exception id |
+| `client_id` | UUID | Link to client |
+| `start_dt` | Timestamp | Exact start time of care exception |
+| `end_dt` | Timestamp | Exact end time of care exception |
+| `type` | Text | `'full_cancellation'`, `'modification'` |
+| `override_num_caregivers` | Int | Only used if type='modification' |
+| `reason` | Text | Reason for exception |
+
+> **Note:** Always subtractive or modification. For extra days that do not fit into a care_pattern, insert directly into `care_requests`.
+
+### Table: `care_requests`
+*The concrete "Billable Items" generated from patterns and exceptions.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Care request id |
+| `pattern_id` | UUID | The pattern this care request belongs to (null if a one-off) |
+| `client_id` | UUID | Client id that made this care request |
+| `start_dt` | Timestamp | Exact start time of care |
+| `end_dt` | Timestamp | Exact end time of care |
+| `num_caregivers` | Int | Number of caregivers needed for this shift (default=1, MVP=1) |
+| `status` | Text | `'open'`, `'partial'`, `'filled'`, `'cancelled'`, `'unfilled'`, `'completed'` |
+
+> **Note:** Generated on a rolling window (e.g., 14 days out). The matcher will just check care requests that are 1 week from now.
+
+---
+
+## 4. Shifts & Assignments (The Result)
+
+### Table: `shift_assignments`
+*The actual assignment of a caregiver to a request.*
+
+| Name | Type | Description |
+| :--- | :--- | :--- |
+| `id` | UUID | Shift assignment id |
+| `care_request_id` | UUID | The id of the care request that this shift is covering |
+| `caregiver_id` | UUID | The id of the caregiver who this shift belongs to |
+| `start_dt` | Timestamp | Exact start time of shift |
+| `end_dt` | Timestamp | Exact end time of shift |
+| `status` | Text | `'assigned'`, `'completed'`, `'cancelled'`, `'accepted'`, `'rejected'` |
+| `match_score` | Float8 | The match score between the assigned caregiver and the shift |
+| `rating` | Int | 1-5 (null unless a rating is given after shift completion) |
+| `feedback` | Text | Feedback/comments on the shift that may be collected after completion |
+
+> **Note:** Matching is performed on a rolling window (e.g., 14 days out).

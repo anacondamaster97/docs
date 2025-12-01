@@ -48,8 +48,30 @@
         ]
       },
       {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Scheduler MVP",
+            "pages": [
+              "essentials/scheduler/database-schema",
+              "essentials/scheduler/dashboard"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API reference",
         "groups": [
+          {
+            "group": "Scheduler API",
+            "pages": [
+              "api-reference/availability",
+              "api-reference/care-request",
+              "api-reference/scheduling",
+              "api-reference/dispatch",
+              "api-reference/client"
+            ]
+          },
           {
             "group": "API documentation",
             "pages": [

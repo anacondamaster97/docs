@@ -1,0 +1,72 @@
+---
+title: 'Availability Service'
+description: 'Handles caregiver schedules, recurring availability, and time-off exceptions.'
+---
+
+## Endpoints
+
+### Add Availability Pattern
+`POST /api/availability/tools/add`
+
+Adds a new recurring availability pattern for a caregiver. Used by Vapi when a caregiver says, "I can work Mondays and Wednesdays."
+
+**Logic:** Looks up caregiver by phone, then inserts a row into `availability_patterns`. Make Vapi check if this is a common pattern week after week or just for this week.
+
+**Expects (JSON):**
+```json
+{
+  "caregiver_id": "uuid-of-caregiver",
+  "frequency": "WEEKLY",
+  "days": "MO,WE",
+  "local_start_time": "09:00:00",
+  "local_end_time": "17:00:00"
+}
+```
+
+**Returns:**
+```json
+{ "result": "Availability added successfully." }
+```
+
+### Create Exception (Time Off)
+`POST /api/availability/tools/create-exception`
+
+Adds a "Time Off" exception (subtractive) for a caregiver. Used by Vapi when a caregiver says, "I am on vacation next week."
+
+**Logic:** Looks up caregiver by phone, then inserts `is_available = false` row into `availability_exceptions`.
+
+**Expects (JSON):**
+```json
+{
+  "caregiver_id": "uuid-of-caregiver",
+  "start_dt": "2023-12-01T09:00:00Z",
+  "end_dt": "2023-12-07T17:00:00Z",
+  "is_available": false,
+  "reason": "Vacation"
+}
+```
+
+**Returns:**
+```json
+{ "result": "Time off recorded." }
+```
+
+### Initiate Collection Call
+`POST /api/availability/initiate-collection`
+
+Manually triggers an outbound call to a specific caregiver to ask for their schedule.
+
+**Logic:** Initiates a Vapi call using the "Availability Collector" assistant.
+
+**Expects (JSON):**
+```json
+{
+  "caregiver_id": "uuid-of-caregiver",
+  "method": "vapi"
+}
+```
+
+**Returns:**
+```json
+{ "status": "dummy" }
+```

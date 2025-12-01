@@ -1,0 +1,68 @@
+---
+title: 'Client Service'
+description: 'Handles client profile data and related information.'
+---
+
+## Endpoints
+
+### Get Client Details
+`GET /api/clients/[id]`
+
+Fetches comprehensive client details including all related data (care requests, shifts, patterns, etc.).
+
+**Logic:** Retrieves client by ID, then fetches all related data including:
+- Care requests for the client
+- Care patterns (recurring schedules)
+- Care exceptions
+- Shift assignments with caregiver details
+- Preferred caregivers (resolved from UUID array)
+- Blacklisted caregivers (resolved from UUID array)
+- Calculated statistics
+
+**Expects:** Client ID as URL parameter
+
+**Returns:**
+```json
+{
+  "client": {
+    "id": "uuid",
+    "first_name": "string",
+    "last_name": "string",
+    "status": "active|inactive|suspended",
+    "gender": "string|null",
+    "age": "number|null",
+    "phone_number": "string|null",
+    "timezone": "string",
+    "personal_tags": ["string"],
+    "caregiver_dealbreaker_tags": ["string"],
+    "required_skills": ["string"],
+    "preferred_caregivers": ["uuid"],
+    "blacklisted_caregivers": ["uuid"],
+    "created_at": "timestamp",
+    "updated_at": "timestamp"
+  },
+  "careRequests": [...],
+  "carePatterns": [...],
+  "careExceptions": [...],
+  "shiftAssignments": [...],
+  "preferredCaregivers": [...],
+  "blacklistedCaregivers": [...],
+  "stats": {
+    "totalCareRequests": "number",
+    "openRequests": "number",
+    "filledRequests": "number",
+    "partialRequests": "number",
+    "unfilledRequests": "number",
+    "completedRequests": "number",
+    "cancelledRequests": "number",
+    "totalShifts": "number",
+    "acceptedShifts": "number",
+    "rejectedShifts": "number",
+    "assignedShifts": "number",
+    "completedShifts": "number",
+    "cancelledShifts": "number",
+    "activeCarePatterns": "number",
+    "totalCarePatterns": "number"
+  }
+}
+```

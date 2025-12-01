@@ -1,0 +1,72 @@
+---
+title: 'Care Request Service'
+description: 'Handles client care requirements, recurring patterns, and cancellations.'
+---
+
+## Endpoints
+
+### Initiate Collection Call
+`POST /api/client-care-request/initiate-collection`
+
+Manually triggers an outbound call to a specific client/family to ask for their upcoming care needs or changes.
+
+**Logic:** (MVP) Returns a dummy success status. (V2) Initiates a Vapi call using the "Care Needs Assessment" assistant.
+
+**Expects (JSON):**
+```json
+{
+  "client_id": "uuid-of-client",
+  "method": "vapi"
+}
+```
+
+**Returns:**
+```json
+{ "status": "dummy" }
+```
+
+### Create Care Pattern
+`POST /api/client-care-request/tools/create-pattern`
+
+Creates a new recurring care pattern for a client. Used by Vapi when a client says, "I need care every Friday."
+
+**Logic:** Looks up client by phone, inserts row into `care_patterns`, and immediately triggers the generator to show upcoming shifts.
+
+**Expects (JSON):**
+```json
+{
+  "client_id": "uuid-of-client",
+  "frequency": "WEEKLY",
+  "days": "FR",
+  "local_start_time": "09:00:00",
+  "local_end_time": "17:00:00"
+}
+```
+
+**Returns:**
+```json
+{ "result": "Care schedule created." }
+```
+
+### Create Exception (Cancellation)
+`POST /api/client-care-request/tools/create-exception`
+
+Cancels care for a specific date. Used by Vapi when a client says, "Cancel care for next Tuesday."
+
+**Logic:** Looks up client by phone, calculates start/end of day from the provided date, and inserts a `care_exception` (Block).
+
+**Expects (JSON):**
+```json
+{
+  "client_id": "uuid-of-client",
+  "start_dt": "2023-12-01T00:00:00Z",
+  "end_dt": "2023-12-01T23:59:59Z",
+  "type": "full_cancellation",
+  "reason": "Family visiting"
+}
+```
+
+**Returns:**
+```json
+{ "result": "Cancellation recorded." }
+```
